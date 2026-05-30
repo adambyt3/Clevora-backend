@@ -46,6 +46,29 @@ const resultSchema = new mongoose.Schema(
     durasiPengerjaan: {
       type: Number, // durasi dalam detik
     },
+    log_pelanggaran: [
+      {
+        jenis_pelanggaran: {
+          type: String, // e.g., 'wajah_tidak_ada', 'multi_wajah', 'menoleh', 'pindah_aplikasi'
+          required: true,
+        },
+        timestamp: {
+          type: Date,
+          default: Date.now,
+        },
+        screenshot_url: {
+          type: String,
+        },
+      },
+    ],
+    berakhir_paksa: {
+      type: Boolean,
+      default: false,
+    },
+    jumlah_peringatan: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,

@@ -1,0 +1,123 @@
+<div class="card-premium p-4">
+  
+  <div class="d-md-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h4 class="fw-bold mb-1" style="color: var(--purple-dark);">Daftar Guru</h4>
+      <p class="text-muted mb-0 small">Kelola data tenaga pengajar, NIP, mata pelajaran diampu, dan jenjang ajar.</p>
+    </div>
+    <div class="mt-3 mt-md-0 d-flex gap-2">
+      <!-- Filter mapel -->
+      <select id="mapelFilter" class="form-select border-2" style="border-radius: 12px; width: 200px; font-weight: 600; color: var(--teal);">
+        <option value="">Semua Mapel</option>
+        <option value="Matematika">Matematika</option>
+        <option value="IPA">IPA (Sains)</option>
+        <option value="IPS">IPS (Sosial)</option>
+        <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+        <option value="Informatika">Informatika</option>
+      </select>
+      <a href="/guru/tambah" class="btn btn-premium btn-premium-primary" style="background: linear-gradient(135deg, var(--teal) 0%, #35c093 100%); box-shadow: 0 4px 15px rgba(29, 158, 117, 0.25);">
+        <i class="fa-solid fa-plus me-1"></i> Tambah Guru
+      </a>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table id="guruTable" class="table table-borderless align-middle table-premium w-100">
+      <thead class="table-light text-muted" style="font-size: 0.85rem; font-weight: 700;">
+        <tr>
+          <th>NO</th>
+          <th>NAMA LENGKAP</th>
+          <th>NIP</th>
+          <th>MATA PELAJARAN</th>
+          <th>JENJANG</th>
+          <th>EMAIL</th>
+          <th>STATUS AKUN</th>
+          <th class="text-end">AKSI</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (guru && guru.length > 0) { %>
+          <% guru.forEach((item, index) => { %>
+            <tr>
+              <td class="text-muted"><%= index + 1 %></td>
+              <td class="fw-bold" style="color: var(--purple-dark);"><%= item.nama %></td>
+              <td class="fw-semibold"><%= item.nip || '-' %></td>
+              <td><span class="badge badge-premium badge-teal"><%= item.mapel || 'N/A' %></span></td>
+              <td><span class="badge badge-premium badge-purple"><%= item.jenjang || 'SD' %></span></td>
+              <td class="text-muted"><%= item.email %></td>
+              <td>
+                <% if (item.is_verified) { %>
+                  <span class="badge badge-premium badge-teal"><i class="fa-solid fa-circle-check me-1"></i> Terverifikasi</span>
+                <% } else { %>
+                  <span class="badge badge-premium badge-amber"><i class="fa-solid fa-clock me-1"></i> Pending OTP</span>
+                <% } %>
+              </td>
+              <td class="text-end">
+                <div class="d-flex justify-content-end gap-2">
+                  <a href="/guru/edit/<%= item._id %>" class="btn btn-sm btn-outline-primary border-0 rounded-3 p-2 px-3" style="background-color: rgba(83, 74, 183, 0.05); color: var(--purple);">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </a>
+                  <button type="button" class="btn btn-sm btn-outline-danger border-0 rounded-3 p-2 px-3" style="background-color: var(--error-light); color: var(--error);" onclick="confirmDelete('<%= item._id %>', '<%= item.nama %>')">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                  <form id="delete-form-<%= item._id %>" action="/guru/delete/<%= item._id %>?_method=DELETE" method="POST" class="d-none"></form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const table = $('#guruTable').DataTable({
+      responsive: true,
+      dom: '<"d-flex align-items-center justify-content-between mb-3"lfr>t<"d-flex align-items-center justify-content-between mt-3"ip>',
+      language: {
+        search: "Cari Guru:",
+        lengthMenu: "Tampilkan _MENU_ data",
+        info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ guru",
+        infoEmpty: "Menampilkan 0 sampai 0 dari 0 guru",
+        paginate: {
+          next: "<i class='fa-solid fa-chevron-right'></i>",
+          previous: "<i class='fa-solid fa-chevron-left'></i>"
+        }
+      }
+    });
+
+    // Mapel Filter
+    $('#mapelFilter').on('change', function() {
+      const selectedMapel = this.value;
+      if (selectedMapel) {
+        // filter table rows by column 3 (Mapel badge)
+        table.column(3).search('^' + selectedMapel + '$', true, false).draw();
+      } else {
+        table.column(3).search('').draw();
+      }
+    });
+  });
+
+  function confirmDelete(id, name) {
+    Swal.fire({
+      title: 'Apakah Anda yakin?',
+      text: `Data guru "${name}" akan dihapus permanen dari sistem Clevora. Semua kuis miliknya akan kehilangan pembuat.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#E24B4A',
+      cancelButtonColor: '#4B5563',
+      confirmButtonText: 'Ya, Hapus!',
+      cancelButtonText: 'Batal',
+      background: '#fff',
+      customClass: {
+        popup: 'rounded-4 border-0'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        document.getElementById(`delete-form-${id}`).submit();
+      }
+    });
+  }
+</script>

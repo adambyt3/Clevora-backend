@@ -1,0 +1,53 @@
+<div class="login-card shadow-lg">
+  <div class="login-logo">
+    <i class="fa-solid fa-graduation-cap"></i>
+    <h1>CLEVORA</h1>
+    <span>Web Admin Portal</span>
+  </div>
+
+  <% if (error && error.length > 0) { %>
+    <div class="alert alert-danger border-0 rounded-3 mb-4 text-center py-2" role="alert" style="background-color: var(--error-light); color: var(--error); font-size: 0.9rem; font-weight: 500;">
+      <i class="fa-solid fa-triangle-exclamation me-1"></i> <%= error %>
+    </div>
+  <% } %>
+
+  <form action="/login" method="POST" class="form-premium">
+    <div class="mb-3">
+      <label for="email" class="form-label fw-semibold text-white-50 small">EMAIL ADMINISTRATOR</label>
+      <div class="input-group">
+        <span class="input-group-text border-0 bg-white-5" style="border-top-left-radius: 12px; border-bottom-left-radius: 12px; color: rgba(255,255,255,0.6);">
+          <i class="fa-solid fa-envelope"></i>
+        </span>
+        <input type="email" class="form-control border-0 bg-white-5 text-white" id="email" name="email" placeholder="admin@clevora.id" required style="border-top-right-radius: 12px; border-bottom-right-radius: 12px; font-weight: 500;">
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <label for="password" class="form-label fw-semibold text-white-50 small">PASSWORD SECURE</label>
+      <div class="input-group">
+        <span class="input-group-text border-0 bg-white-5" style="border-top-left-radius: 12px; border-bottom-left-radius: 12px; color: rgba(255,255,255,0.6);">
+          <i class="fa-solid fa-lock"></i>
+        </span>
+        <input type="password" class="form-control border-0 bg-white-5 text-white" id="password" name="password" placeholder="••••••••" required style="border-top-right-radius: 12px; border-bottom-right-radius: 12px; font-weight: 500;">
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-premium btn-premium-primary w-100 py-3 mt-2 fs-6">
+      Masuk ke Dashboard <i class="fa-solid fa-arrow-right ms-1"></i>
+    </button>
+  </form>
+</div>
+
+<style>
+  .bg-white-5 {
+    background: rgba(255, 255, 255, 0.06) !important;
+    transition: var(--transition);
+  }
+  .bg-white-5:focus {
+    background: rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 0 0 4px rgba(29, 158, 117, 0.25) !important;
+  }
+  .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.3) !important;
+  }
+</style>

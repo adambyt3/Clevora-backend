@@ -1,0 +1,131 @@
+<div class="container-fluid p-0 animate-fade-in">
+  
+  <div class="mb-4">
+    <a href="/kuis" class="btn btn-premium btn-sm p-1 px-3 border border-2 text-decoration-none mb-3 d-inline-flex align-items-center gap-1" style="font-size: 0.85rem; color: var(--purple);">
+      <i class="fa-solid fa-arrow-left"></i> Kembali ke Daftar Kuis
+    </a>
+    
+    <div class="d-md-flex align-items-center justify-content-between">
+      <div>
+        <h2 class="fw-bold mb-1" style="color: var(--purple-dark);"><%= quiz.judul %></h2>
+        <p class="text-muted mb-0"><%= quiz.deskripsi || 'Rincian data dan rekapitulasi penyelesaian kuis oleh siswa.' %></p>
+      </div>
+      <div class="mt-3 mt-md-0 d-flex gap-2">
+        <form action="/kuis/<%= quiz._id %>/close" method="POST">
+          <button type="submit" class="btn btn-premium btn-outline-danger border border-2 border-danger text-danger bg-white" style="font-weight: 600;">
+            <i class="fa-solid fa-lock me-1"></i> Paksa Tutup Kuis
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quiz stats summary counters -->
+  <% 
+    let sum = 0;
+    let max = 0;
+    let min = 100;
+    submissions.forEach(s => {
+      sum += s.nilai;
+      if (s.nilai > max) max = s.nilai;
+      if (s.nilai < min) min = s.nilai;
+    });
+    const avg = submissions.length > 0 ? Math.round(sum / submissions.length * 10) / 10 : 0;
+    if (submissions.length === 0) min = 0;
+  %>
+  <div class="row g-4 mb-4">
+    <div class="col-sm-6 col-md-3">
+      <div class="card-premium p-3 text-center">
+        <h3 class="fw-bold mb-0 text-purple"><%= submissions.length %></h3>
+        <small class="text-muted fw-semibold">Siswa Menyelesaikan</small>
+      </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+      <div class="card-premium p-3 text-center">
+        <h3 class="fw-bold mb-0 text-teal"><%= avg %>%</h3>
+        <small class="text-muted fw-semibold">Rata-rata Kelas</small>
+      </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+      <div class="card-premium p-3 text-center">
+        <h3 class="fw-bold mb-0 text-purple-dark"><%= max %>%</h3>
+        <small class="text-muted fw-semibold">Nilai Tertinggi</small>
+      </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+      <div class="card-premium p-3 text-center">
+        <h3 class="fw-bold mb-0 text-danger"><%= min %>%</h3>
+        <small class="text-muted fw-semibold">Nilai Terendah</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Question overview list -->
+    <div class="col-lg-4">
+      <div class="card-premium p-4 h-100">
+        <h5 class="fw-bold mb-3" style="color: var(--purple-dark);">Rincian Kuis</h5>
+        <ul class="list-group list-group-flush" style="font-size: 0.95rem; font-weight: 500;">
+          <li class="list-group-item d-flex justify-content-between py-3 px-0 bg-transparent">
+            <span class="text-muted">Mata Pelajaran:</span>
+            <span class="badge badge-premium badge-purple"><%= quiz.mapel %></span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between py-3 px-0 bg-transparent">
+            <span class="text-muted">Kelas Sasaran:</span>
+            <span class="badge badge-premium badge-teal"><%= quiz.kelas || 'Semua' %></span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between py-3 px-0 bg-transparent">
+            <span class="text-muted">Durasi Ujian:</span>
+            <span class="fw-bold"><%= quiz.durasi || 30 %> Menit</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between py-3 px-0 bg-transparent">
+            <span class="text-muted">Total Pertanyaan:</span>
+            <span class="fw-bold text-purple"><%= quiz.soal ? quiz.soal.length : 0 %> Butir Soal</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Submissions table -->
+    <div class="col-lg-8">
+      <div class="card-premium p-4 h-100">
+        <h5 class="fw-bold mb-3" style="color: var(--purple-dark);">Submisi Hasil Kerja Siswa</h5>
+        
+        <div class="table-responsive">
+          <table class="table table-borderless align-middle table-premium w-100" id="submissionsTable">
+            <thead class="table-light text-muted" style="font-size: 0.85rem; font-weight: 700;">
+              <tr>
+                <th>NAMA SISWA</th>
+                <th>KELAS</th>
+                <th>TANGGAL SUBMIT</th>
+                <th>DURASI</th>
+                <th>SKOR</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (submissions && submissions.length > 0) { %>
+                <% submissions.forEach(sub => { %>
+                  <% const isLow = sub.nilai < 70 %>
+                  <tr style="<%= isLow ? 'border-left: 4px solid var(--error);' : 'border-left: 4px solid var(--teal);' %>">
+                    <td class="fw-bold" style="color: var(--purple-dark);"><%= sub.siswa ? sub.siswa.nama : 'N/A' %></td>
+                    <td><span class="badge badge-premium badge-purple"><%= sub.siswa ? sub.siswa.kelas : 'N/A' %></span></td>
+                    <td class="text-muted"><%= new Date(sub.createdAt).toLocaleString('id-ID') %></td>
+                    <td class="fw-semibold"><%= sub.durasiPengerjaan || 0 %> detik</td>
+                    <td>
+                      <span class="fw-bold <%= isLow ? 'text-danger' : 'text-teal' %>"><%= sub.nilai %>%</span>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="5" class="text-center py-4 text-muted">Belum ada siswa yang menyelesaikan kuis ini.</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

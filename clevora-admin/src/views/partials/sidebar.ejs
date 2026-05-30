@@ -1,0 +1,67 @@
+<% const currentPath = typeof path !== 'undefined' ? path : '' %>
+<aside class="sidebar">
+  <a href="/dashboard" class="sidebar-brand">
+    <i class="fa-solid fa-graduation-cap"></i>
+    <span>Clevora Admin</span>
+  </a>
+  
+  <ul class="nav flex-column">
+    <li class="nav-item">
+      <a href="/dashboard" class="nav-link <%= currentPath === '/dashboard' ? 'active' : '' %>">
+        <i class="fa-solid fa-chart-line"></i>
+        <span>Dashboard</span>
+      </a>
+    </li>
+    
+    <li class="nav-item">
+      <a href="/siswa" class="nav-link <%= currentPath.startsWith('/siswa') ? 'active' : '' %>">
+        <i class="fa-solid fa-user-graduate"></i>
+        <span>Data Siswa</span>
+      </a>
+    </li>
+    
+    <li class="nav-item">
+      <a href="/guru" class="nav-link <%= currentPath.startsWith('/guru') ? 'active' : '' %>">
+        <i class="fa-solid fa-chalkboard-user"></i>
+        <span>Data Guru</span>
+      </a>
+    </li>
+    
+    <li class="nav-item">
+      <a href="/nilai" class="nav-link <%= currentPath.startsWith('/nilai') ? 'active' : '' %>">
+        <i class="fa-solid fa-award"></i>
+        <span>Laporan Nilai</span>
+      </a>
+    </li>
+    
+    <li class="nav-item">
+      <a href="/kuis" class="nav-link <%= currentPath.startsWith('/kuis') ? 'active' : '' %>">
+        <i class="fa-solid fa-circle-question"></i>
+        <span>Monitor Kuis</span>
+      </a>
+    </li>
+    
+    <li class="nav-item">
+      <a href="/pelanggaran" class="nav-link <%= currentPath.startsWith('/pelanggaran') ? 'active' : '' %>">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>Log Pelanggaran</span>
+      </a>
+    </li>
+    
+    <li class="nav-item">
+      <a href="/absensi" class="nav-link <%= currentPath.startsWith('/absensi') ? 'active' : '' %>">
+        <i class="fa-solid fa-calendar-check"></i>
+        <span>Absensi</span>
+      </a>
+    </li>
+    
+    <hr style="border-color: rgba(255,255,255,0.1); margin: 1.5rem 0;">
+    
+    <li class="nav-item mt-auto">
+      <a href="/logout" class="nav-link text-danger" style="background: transparent; box-shadow: none;">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        <span>Keluar</span>
+      </a>
+    </li>
+  </ul>
+</aside>

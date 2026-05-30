@@ -1,0 +1,113 @@
+<div class="container-fluid p-0 animate-fade-in">
+  
+  <div class="d-md-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h2 class="fw-bold mb-1" style="color: var(--purple-dark);">Monitor Kuis & Ujian</h2>
+      <p class="text-muted mb-0">Lihat kuis aktif, persentase partisipasi siswa, dan kelola kelangsungan ujian.</p>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="card-premium p-3 mb-4">
+    <div class="d-flex flex-wrap gap-2">
+      <button class="btn btn-premium btn-premium-primary" onclick="filterQuizzes('all')">Semua Kuis</button>
+      <button class="btn btn-premium btn-light border" onclick="filterQuizzes('Matematika')">Matematika</button>
+      <button class="btn btn-premium btn-light border" onclick="filterQuizzes('IPA')">IPA (Sains)</option>
+      <button class="btn btn-premium btn-light border" onclick="filterQuizzes('IPS')">IPS (Sosial)</option>
+      <button class="btn btn-premium btn-light border" onclick="filterQuizzes('Informatika')">Informatika</option>
+    </div>
+  </div>
+
+  <!-- Quiz Grid -->
+  <div class="row g-4" id="quizGrid">
+    <% if (quizzes && quizzes.length > 0) { %>
+      <% quizzes.forEach(quiz => { %>
+        <% 
+          // Categorise type based on title
+          let typeClass = "badge-teal";
+          let typeLabel = "Postest";
+          if (quiz.judul.toLowerCase().includes("pretest")) {
+            typeClass = "badge-purple";
+            typeLabel = "Pretest";
+          } else if (quiz.judul.toLowerCase().includes("ujian") || quiz.judul.toLowerCase().includes("uts") || quiz.judul.toLowerCase().includes("uas")) {
+            typeClass = "badge-amber";
+            typeLabel = "Ujian Utama";
+          }
+        %>
+        <div class="col-md-6 col-xl-4 quiz-card" data-mapel="<%= quiz.mapel %>">
+          <div class="card-premium p-4 h-100 d-flex flex-column justify-content-between">
+            <div>
+              <div class="d-flex align-items-center justify-content-between mb-3">
+                <span class="badge badge-premium <%= typeClass %>"><%= typeLabel %></span>
+                <span class="badge badge-premium badge-purple"><%= quiz.mapel %></span>
+              </div>
+              
+              <h5 class="fw-bold mb-2 text-truncate" style="color: var(--purple-dark);"><%= quiz.judul %></h5>
+              <p class="text-muted small mb-3 text-truncate-3"><%= quiz.deskripsi || 'Tidak ada deskripsi kuis.' %></p>
+              
+              <!-- Progress bar (mocking submit rate) -->
+              <div class="mb-4">
+                <div class="d-flex justify-content-between text-muted mb-1" style="font-size: 0.8rem; font-weight: 500;">
+                  <span>Tingkat Submit</span>
+                  <span><strong>18 / 36 Siswa</strong> (50%)</span>
+                </div>
+                <div class="progress rounded-pill" style="height: 8px; background-color: var(--gray-100);">
+                  <div class="progress-bar rounded-pill" role="progressbar" style="width: 50%; background: linear-gradient(135deg, var(--purple) 0%, #685FD4 100%);" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between mt-auto pt-3 border-top">
+              <small class="text-muted fw-semibold"><i class="fa-regular fa-clock me-1"></i> Durasi: <%= quiz.durasi || 30 %> Menit</small>
+              <a href="/kuis/<%= quiz._id %>" class="btn btn-premium btn-sm p-1 px-3 border border-2 text-decoration-none" style="font-size: 0.8rem; color: var(--purple);">Rincian Ujian</a>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <!-- Seed mock data if empty -->
+      <div class="col-md-6 col-xl-4 quiz-card" data-mapel="Matematika">
+        <div class="card-premium p-4 h-100 d-flex flex-column justify-content-between">
+          <div>
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <span class="badge badge-premium badge-amber">Ujian Utama</span>
+              <span class="badge badge-premium badge-purple">Matematika</span>
+            </div>
+            
+            <h5 class="fw-bold mb-2 text-truncate" style="color: var(--purple-dark);">Kuis Aljabar Dasar</h5>
+            <p class="text-muted small mb-3">Kuis untuk menguji pemahaman dasar aljabar linier dan pertidaksamaan satu variabel.</p>
+            
+            <div class="mb-4">
+              <div class="d-flex justify-content-between text-muted mb-1" style="font-size: 0.8rem; font-weight: 500;">
+                <span>Tingkat Submit</span>
+                <span><strong>24 / 36 Siswa</strong> (67%)</span>
+              </div>
+              <div class="progress rounded-pill" style="height: 8px; background-color: var(--gray-100);">
+                <div class="progress-bar rounded-pill" role="progressbar" style="width: 67%; background: linear-gradient(135deg, var(--teal) 0%, #35c093 100%);" aria-valuenow="67" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center justify-content-between mt-auto pt-3 border-top">
+            <small class="text-muted fw-semibold"><i class="fa-regular fa-clock me-1"></i> Durasi: 45 Menit</small>
+            <a href="#" class="btn btn-premium btn-sm p-1 px-3 border border-2 text-decoration-none disabled" style="font-size: 0.8rem;">Rincian Ujian</a>
+          </div>
+        </div>
+      </div>
+    <% } %>
+  </div>
+
+</div>
+
+<script>
+  function filterQuizzes(mapel) {
+    const cards = document.querySelectorAll(".quiz-card");
+    cards.forEach(card => {
+      if (mapel === "all" || card.dataset.mapel === mapel) {
+        card.style.display = "block";
+      } else {
+        card.style.display = "none";
+      }
+    });
+  }
+</script>

@@ -8,6 +8,7 @@ const modulRoutes = require("./routes/modul.routes");
 const hasilRoutes = require("./routes/hasil.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
 const aiRoutes = require("./routes/ai.routes");
+const absensiRoutes = require("./routes/absensi.routes");
 
 const app = express();
 
@@ -21,5 +22,6 @@ app.use("/api/modul", modulRoutes);
 app.use("/api/hasil", hasilRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/absensi", absensiRoutes);
 
 module.exports = app;

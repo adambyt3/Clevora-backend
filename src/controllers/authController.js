@@ -334,3 +334,151 @@ exports.getMe = async (req, res) => {
     });
   }
 };
+
+// 1. Get all students (Siswa)
+exports.getSiswaList = async (req, res) => {
+  try {
+    const list = await User.find({ role: "siswa" }).sort({ nama: 1 });
+    res.status(200).json({
+      success: true,
+      data: list,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// 2. Get all teachers (Guru)
+exports.getGuruList = async (req, res) => {
+  try {
+    const list = await User.find({ role: "guru" }).sort({ nama: 1 });
+    res.status(200).json({
+      success: true,
+      data: list,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// 3. Update User (Siswa/Guru)
+exports.updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nama, email, role, password, nip, nisn, kelas, sekolah, mapel, jenjang } = req.body;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User tidak ditemukan" });
+    }
+
+    // Check email availability if updated
+    if (email && email !== user.email) {
+      const existing = await User.findOne({ email });
+      if (existing) {
+        return res.status(400).json({ success: false, message: "Email sudah digunakan oleh user lain" });
+      }
+      user.email = email;
+    }
+
+    if (nama) user.nama = nama;
+    if (role) user.role = role;
+    if (password && password.trim() !== "") {
+      user.password = await bcrypt.hash(password, 10);
+    }
+
+    if (user.role === "guru") {
+      if (nip !== undefined) user.nip = nip;
+      if (mapel !== undefined) user.mapel = mapel;
+      if (jenjang !== undefined) user.jenjang = jenjang;
+      // Clear student fields
+      user.nisn = undefined;
+      user.kelas = undefined;
+      user.sekolah = undefined;
+    } else {
+      if (nisn !== undefined) user.nisn = nisn;
+      if (kelas !== undefined) user.kelas = kelas;
+      if (sekolah !== undefined) user.sekolah = sekolah;
+      // Clear teacher fields
+      user.nip = undefined;
+      user.mapel = undefined;
+      user.jenjang = undefined;
+    }
+
+    await user.save();
+
+    const response = user.toObject();
+    delete response.password;
+
+    res.status(200).json({
+      success: true,
+      message: "User berhasil diperbarui",
+      data: response,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// 4. Delete User (Siswa/Guru)
+exports.deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByIdAndDelete(id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User tidak ditemukan" });
+    }
+    res.status(200).json({
+      success: true,
+      message: "User berhasil dihapus",
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// 5. Get admin dashboard statistics
+exports.getStats = async (req, res) => {
+  try {
+    const totalSiswa = await User.countDocuments({ role: "siswa" });
+    const totalGuru = await User.countDocuments({ role: "guru" });
+    
+    const Quiz = require("../models/Quiz");
+    const Result = require("../models/Result");
+
+    const totalKuis = await Quiz.countDocuments();
+
+    // Rata-rata nilai
+    const avgResult = await Result.aggregate([
+      { $group: { _id: null, avgNilai: { $avg: "$nilai" } } }
+    ]);
+    const rerataNilai = avgResult.length > 0 ? Math.round(avgResult[0].avgNilai * 10) / 10 : 0;
+
+    // Kuis terbaru (5 data)
+    const latestQuizzes = await Quiz.find()
+      .populate("guru", "nama email")
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    // Siswa butuh perhatian (nilai < 70)
+    const underperforming = await Result.find({ nilai: { $lt: 70 } })
+      .populate("siswa", "nama kelas email")
+      .populate("kuis", "judul mapel")
+      .sort({ nilai: 1 })
+      .limit(5);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalSiswa,
+        totalGuru,
+        totalKuis,
+        rerataNilai,
+        latestQuizzes,
+        underperforming,
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

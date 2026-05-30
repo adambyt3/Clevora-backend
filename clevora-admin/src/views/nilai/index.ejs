@@ -1,0 +1,292 @@
+<div class="container-fluid p-0 animate-fade-in">
+  
+  <div class="d-md-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h2 class="fw-bold mb-1" style="color: var(--purple-dark);">Laporan Nilai Siswa</h2>
+      <p class="text-muted mb-0">Monitor rekapitulasi nilai kuis, pretest, postest, dan analisis ketuntasan belajar.</p>
+    </div>
+    <div class="mt-3 mt-md-0 d-flex gap-2 print-none">
+      <a href="/nilai/export-excel" class="btn btn-premium btn-premium-primary" style="background: linear-gradient(135deg, var(--teal) 0%, #35c093 100%); border: none;">
+        <i class="fa-solid fa-file-excel me-1"></i> Ekspor Excel
+      </a>
+      <button class="btn btn-premium btn-light border border-2" onclick="window.print();">
+        <i class="fa-solid fa-print me-1"></i> Cetak PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="card-premium p-3 mb-4 print-none">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-3">
+        <select id="kelasFilter" class="form-select border-2">
+          <option value="">Semua Kelas</option>
+          <option value="6A">Kelas 6A</option>
+          <option value="6B">Kelas 6B</option>
+          <option value="6C">Kelas 6C</option>
+          <option value="6D">Kelas 6D</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select id="mapelFilter" class="form-select border-2">
+          <option value="">Semua Mapel</option>
+          <option value="Matematika">Matematika</option>
+          <option value="IPA">IPA (Sains)</option>
+          <option value="IPS">IPS (Sosial)</option>
+          <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+          <option value="Informatika">Informatika</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select id="remedialFilter" class="form-select border-2">
+          <option value="">Semua Status Ketuntasan</option>
+          <option value="tuntas">Tuntas (Score &ge; 70)</option>
+          <option value="remedial">Remedial (Score < 70)</option>
+        </select>
+      </div>
+      <div class="col-md-3 text-end">
+        <button id="resetFilters" class="btn btn-premium btn-light border w-100">
+          <i class="fa-solid fa-filter-circle-xmark me-1"></i> Reset Filter
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analysis Charts Row -->
+  <div class="row g-4 mb-4 print-none">
+    <div class="col-lg-6">
+      <div class="card-premium p-4 h-100">
+        <h5 class="fw-bold mb-3" style="color: var(--purple-dark);">Perbandingan Nilai Pretest vs Postest</h5>
+        <div style="position: relative; height: 260px;">
+          <canvas id="prePostChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card-premium p-4 h-100">
+        <h5 class="fw-bold mb-3" style="color: var(--purple-dark);">Distribusi Klasifikasi Grade Nilai</h5>
+        <div style="position: relative; height: 260px;">
+          <canvas id="gradeChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Grades Table -->
+  <div class="card-premium p-4">
+    <h5 class="fw-bold mb-3" style="color: var(--purple-dark);">Tabel Rekap Nilai Hasil Belajar</h5>
+    
+    <div class="table-responsive">
+      <table id="nilaiTable" class="table table-borderless align-middle table-premium w-100">
+        <thead class="table-light text-muted" style="font-size: 0.85rem; font-weight: 700;">
+          <tr>
+            <th>NAMA SISWA</th>
+            <th>KELAS</th>
+            <th>MATA PELAJARAN</th>
+            <th>KUIS / UJIAN</th>
+            <th>BENAR</th>
+            <th>SALAH</th>
+            <th>SKOR</th>
+            <th>KETUNTASAN</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (results && results.length > 0) { %>
+            <% results.forEach(item => { %>
+              <% const isRemedial = item.nilai < 70 %>
+              <tr style="<%= isRemedial ? 'border-left: 4px solid var(--error); background-color: rgba(226, 75, 74, 0.01);' : 'border-left: 4px solid var(--teal);' %>"
+                  data-kelas="<%= item.siswa ? item.siswa.kelas : '' %>"
+                  data-mapel="<%= item.kuis ? item.kuis.mapel : '' %>"
+                  data-remedial="<%= isRemedial ? 'remedial' : 'tuntas' %>">
+                
+                <td class="fw-bold" style="color: var(--purple-dark);"><%= item.siswa ? item.siswa.nama : 'N/A' %></td>
+                <td><span class="badge badge-premium badge-purple"><%= item.siswa ? item.siswa.kelas : 'N/A' %></span></td>
+                <td class="fw-semibold"><%= item.kuis ? item.kuis.mapel : 'N/A' %></td>
+                <td class="text-muted"><%= item.kuis ? item.kuis.judul : 'N/A' %></td>
+                <td class="text-teal fw-bold"><%= item.benar %></td>
+                <td class="text-danger fw-bold"><%= item.salah %></td>
+                <td>
+                  <span class="fs-6 fw-bold <%= isRemedial ? 'text-danger' : 'text-teal' %>"><%= item.nilai %>%</span>
+                </td>
+                <td>
+                  <% if (isRemedial) { %>
+                    <span class="badge badge-premium badge-error"><i class="fa-solid fa-triangle-exclamation me-1"></i> Remedial</span>
+                  <% } else { %>
+                    <span class="badge badge-premium badge-teal"><i class="fa-solid fa-circle-check me-1"></i> Tuntas</span>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <!-- Seed a few mock rows if empty -->
+            <tr style="border-left: 4px solid var(--teal);" data-kelas="6A" data-mapel="Matematika" data-remedial="tuntas">
+              <td class="fw-bold" style="color: var(--purple-dark);">Budi Santoso</td>
+              <td><span class="badge badge-premium badge-purple">6A</span></td>
+              <td class="fw-semibold">Matematika</td>
+              <td class="text-muted">Kuis Aljabar Dasar</td>
+              <td class="text-teal fw-bold">8</td>
+              <td class="text-danger fw-bold">2</td>
+              <td><span class="fs-6 fw-bold text-teal">80%</span></td>
+              <td><span class="badge badge-premium badge-teal"><i class="fa-solid fa-circle-check me-1"></i> Tuntas</span></td>
+            </tr>
+            <tr style="border-left: 4px solid var(--error); background-color: rgba(226, 75, 74, 0.01);" data-kelas="6B" data-mapel="IPA" data-remedial="remedial">
+              <td class="fw-bold" style="color: var(--purple-dark);">Siti Rahma</td>
+              <td><span class="badge badge-premium badge-purple">6B</span></td>
+              <td class="fw-semibold">IPA</td>
+              <td class="text-muted">Pretest Struktur Sel</td>
+              <td class="text-teal fw-bold">5</td>
+              <td class="text-danger fw-bold">5</td>
+              <td><span class="fs-6 fw-bold text-danger">50%</span></td>
+              <td><span class="badge badge-premium badge-error"><i class="fa-solid fa-triangle-exclamation me-1"></i> Remedial</span></td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- DataTables & Chart Script -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // 1. Initialize DataTable
+    const table = $('#nilaiTable').DataTable({
+      responsive: true,
+      dom: '<"d-flex align-items-center justify-content-between mb-3"lfr>t<"d-flex align-items-center justify-content-between mt-3"ip>',
+      language: {
+        search: "Cari Rekap:",
+        lengthMenu: "Tampilkan _MENU_ data",
+        info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data nilai",
+        paginate: {
+          next: "<i class='fa-solid fa-chevron-right'></i>",
+          previous: "<i class='fa-solid fa-chevron-left'></i>"
+        }
+      }
+    });
+
+    // 2. Custom Filter Handlers
+    function applyFilters() {
+      const kelasVal = $('#kelasFilter').val();
+      const mapelVal = $('#mapelFilter').val();
+      const remedialVal = $('#remedialFilter').val();
+
+      $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+        const row = table.row(dataIndex).node();
+        const rowKelas = $(row).data('kelas');
+        const rowMapel = $(row).data('mapel');
+        const rowRemedial = $(row).data('remedial');
+
+        const matchKelas = !kelasVal || rowKelas === kelasVal;
+        const matchMapel = !mapelVal || rowMapel === mapelVal;
+        const matchRemedial = !remedialVal || rowRemedial === remedialVal;
+
+        return matchKelas && matchMapel && matchRemedial;
+      });
+
+      table.draw();
+      $.fn.dataTable.ext.search.pop(); // clean up
+    }
+
+    // Bind filters
+    $('#kelasFilter, #mapelFilter, #remedialFilter').on('change', applyFilters);
+
+    // Reset filters
+    $('#resetFilters').on('click', () => {
+      $('#kelasFilter').val('');
+      $('#mapelFilter').val('');
+      $('#remedialFilter').val('');
+      table.search('').draw();
+      applyFilters();
+    });
+
+    // 3. Pre Post Comparison Chart
+    const ctxPrePost = document.getElementById('prePostChart').getContext('2d');
+    new Chart(ctxPrePost, {
+      type: 'bar',
+      data: {
+        labels: ['6A', '6B', '6C', '6D'],
+        datasets: [
+          {
+            label: 'Rerata Pretest',
+            data: [62, 55, 68, 48],
+            backgroundColor: 'rgba(83, 74, 183, 0.4)',
+            borderColor: '#534AB7',
+            borderWidth: 1.5,
+            borderRadius: 6
+          },
+          {
+            label: 'Rerata Postest',
+            data: [82, 77, 88, 71],
+            backgroundColor: 'rgba(29, 158, 117, 0.85)',
+            borderColor: '#1D9E75',
+            borderWidth: 1.5,
+            borderRadius: 6
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true, max: 100 }
+        }
+      }
+    });
+
+    // 4. Grade distribution Chart
+    const ctxGrade = document.getElementById('gradeChart').getContext('2d');
+    new Chart(ctxGrade, {
+      type: 'doughnut',
+      data: {
+        labels: ['Grade A (86-100)', 'Grade B (76-85)', 'Grade C (70-75)', 'Grade D & E (< 70)'],
+        datasets: [{
+          data: [15, 24, 12, 8],
+          backgroundColor: [
+            '#1D9E75', // teal
+            '#534AB7', // purple
+            '#EF9F27', // amber
+            '#E24B4A'  // error red
+          ],
+          borderWidth: 4,
+          borderColor: '#ffffff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'right' }
+        }
+      }
+    });
+  });
+</script>
+
+<style>
+  @media print {
+    .print-none {
+      display: none !important;
+    }
+    .sidebar {
+      display: none !important;
+    }
+    .main-wrapper {
+      margin-left: 0 !important;
+    }
+    .top-navbar {
+      display: none !important;
+    }
+    .content-body {
+      padding: 0 !important;
+    }
+    body {
+      background: white !important;
+    }
+    .card-premium {
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+    }
+  }
+</style>
